@@ -5,33 +5,35 @@ from datetime import datetime, timedelta
 
 from django.shortcuts import redirect, get_object_or_404
 
-from rmcl.models import WorkDir, SqlFile
+from rmcl.models import WorkDir, SqlFile, Task
 from rmcl.utils import remove_comments, remove_procedure
 
 
 def refresh_change_list(request):
     work_dirs = WorkDir.objects.all()
 
-    sql_file_paths = []
-    start_date = (datetime.utcnow() - timedelta(hours=16)).date()
-    end_date = start_date
+    sql_files = set()
     for work_dir in work_dirs:
         for root, dirs, files in os.walk(work_dir.path):
             for file in files:
                 if file.endswith('.sql'):
                     path = os.path.join(root, file).replace(work_dir.path, '')
-                    sql_file_paths.append(SqlFile(path=path, etl_start_date=start_date, etl_end_date=end_date))
+                    sql_files.add(path)
 
-    SqlFile.objects.all().delete()
-    SqlFile.objects.bulk_create(sql_file_paths)
+    values_list = SqlFile.objects.values_list('path', flat=True)
+    deleted_sql_files = set(values_list) - sql_files
+    new_sql_files = sql_files - set(values_list)
+
+    SqlFile.objects.filter(path__in=deleted_sql_files).delete()
+    SqlFile.objects.bulk_create([SqlFile(path=path) for path in new_sql_files])
 
     return redirect('admin:rmcl_sqlfile_changelist')
 
 
 def render_sqlfile(request, pk):
-    sql_file = get_object_or_404(SqlFile, pk=pk)
+    task = get_object_or_404(Task, pk=pk)
     work_dir = WorkDir.objects.first().path
-    sql_file_path = os.path.join(work_dir, sql_file.path)
+    sql_file_path = os.path.join(work_dir, task.sql_file.path)
 
     sql_file_bak = f'{sql_file_path}.bak.sql'
     shutil.copyfile(sql_file_path, sql_file_bak)
@@ -39,8 +41,8 @@ def render_sqlfile(request, pk):
     with open(sql_file_bak) as f:
         sql = f.read()
 
-    latest_partition = (sql_file.etl_start_date - timedelta(days=1)).strftime('%Y/%m/%d/16')
-    eold_partition = sql_file.etl_end_date.strftime('%Y/%m/%d/16~')
+    latest_partition = (task.etl_start_date - timedelta(days=1)).strftime('%Y/%m/%d/16')
+    eold_partition = task.etl_end_date.strftime('%Y/%m/%d/16~')
     dw_latest_utc_timestamp = (datetime.strptime(latest_partition[:10] + f' {latest_partition[11:]}:00:00', '%Y/%m/%d %H:00:00')).isoformat()
 
     if '$dw_latest_partition' in sql or '$dw_eold_partition' in sql:
@@ -48,9 +50,10 @@ def render_sqlfile(request, pk):
         sql = sql.replace('$dw_eold_partition', eold_partition)
         sql = sql.replace('$dw_latest_utc_timestamp', dw_latest_utc_timestamp)
 
-        if sql_file.is_delete_comment:
+        if task.is_delete_comment:
             sql = remove_comments(sql)
-            sql = remove_procedure(sql)
+            if task.sql_file.is_procedure:
+                sql = remove_procedure(sql)
 
         ctas_pattern = re.compile(r'create\s+table\s+(\w+)\.(\w+)\s+as', flags=re.IGNORECASE)
         what = ctas_pattern.findall(sql)
@@ -86,4 +89,4 @@ def render_sqlfile(request, pk):
         with open(sql_file_bak, 'w') as f:
             f.write(sql)
 
-    return redirect(sql_file)
+    return redirect(task)

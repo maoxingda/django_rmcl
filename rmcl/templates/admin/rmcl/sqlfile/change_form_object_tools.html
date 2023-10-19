@@ -1,5 +1,5 @@
 {% load static %}
 
 {% block object-tools-items %}
-    <li><a href="{% url 'rmcl:render_sqlfile' object_id %}">渲染</a></li>
+    <li><a href="{% url 'admin:rmcl_task_add' %}?sql_file={{ object_id }}">添加任务</a></li>
 {% endblock %}
