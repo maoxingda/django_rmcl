@@ -3,6 +3,7 @@ import re
 import shutil
 from datetime import datetime, timedelta
 
+from django.contrib import messages
 from django.shortcuts import redirect, get_object_or_404
 
 from rmcl.models import WorkDir, SqlFile, Task
@@ -26,6 +27,8 @@ def refresh_change_list(request):
 
     SqlFile.objects.filter(path__in=deleted_sql_files).delete()
     SqlFile.objects.bulk_create([SqlFile(path=path) for path in new_sql_files])
+
+    messages.info(request, '刷新成功')
 
     return redirect('admin:rmcl_sqlfile_changelist')
 
@@ -88,5 +91,23 @@ def render_sqlfile(request, pk):
 
         with open(sql_file_bak, 'w') as f:
             f.write(sql)
+
+    task.is_render = True
+    task.save()
+
+    messages.info(request, '渲染成功')
+
+    return redirect(task)
+
+
+def open_sqlfile(request, pk):
+    import subprocess
+
+    work_dir = WorkDir.objects.first().path
+    task = get_object_or_404(Task, pk=pk)
+
+    subprocess.run(["open", f'{os.path.join(work_dir, task.sql_file.path)}.bak.sql'], check=True)
+
+    messages.info(request, '打开成功')
 
     return redirect(task)

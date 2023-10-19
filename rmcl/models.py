@@ -26,7 +26,7 @@ class SqlFile(models.Model):
         return self.path
 
     def get_absolute_url(self):
-        return f'/rmcl/sqlfile/{self.pk}/'
+        return f'/rmcl/sqlfile/{self.pk}/change/'
 
 
 class Task(models.Model):
@@ -41,6 +41,7 @@ class Task(models.Model):
     etl_start_date = models.DateField(verbose_name='ETL开始时间')
     etl_end_date = models.DateField(verbose_name='ETL结束时间')
     is_delete_comment = models.BooleanField(default=False, verbose_name='是否删除注释')
+    is_render = models.BooleanField(default=False, verbose_name='是否已经渲染')
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
@@ -49,4 +50,4 @@ class Task(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return f'/rmcl/task/{self.pk}/'
+        return f'/rmcl/task/{self.pk}/change/'
