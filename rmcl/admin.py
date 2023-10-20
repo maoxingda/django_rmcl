@@ -15,5 +15,6 @@ class SqlFileAdmin(admin.ModelAdmin):
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
+    search_fields = ('name',)
     autocomplete_fields = ('sql_file',)
     list_display = ('name', 'etl_start_date', 'etl_end_date', 'is_delete_comment')

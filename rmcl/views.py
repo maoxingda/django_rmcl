@@ -78,8 +78,8 @@ def render_sqlfile(request, pk):
         dw_latest_utc_timestamp = (datetime.strptime(latest_partition[:10] + f' {latest_partition[11:]}:00:00', '%Y/%m/%d %H:00:00')).isoformat()
 
         if '$dw_latest_partition' in sql or '$dw_eold_partition' in sql:
-            sql = sql.replace('$dw_latest_partition', latest_partition)
-            sql = sql.replace('$dw_eold_partition', eold_partition)
+            sql = sql.replace('$dw_latest_partition'    , latest_partition)
+            sql = sql.replace('$dw_eold_partition'      , eold_partition)
             sql = sql.replace('$dw_latest_utc_timestamp', dw_latest_utc_timestamp)
 
             if task.is_delete_comment:
@@ -116,8 +116,8 @@ def render_sqlfile(request, pk):
                 f.write(sql)
         else:
             with open(sql_file_bak) as f:
-                sql = f.read().replace(f'{latest_partition}', '$dw_latest_partition')
-                sql = sql.replace(f'{eold_partition}', '$dw_eold_partition')
+                sql = f.read().replace(f'{latest_partition}'  , '$dw_latest_partition')
+                sql = sql.replace(f'{eold_partition}'         , '$dw_eold_partition')
                 sql = sql.replace(f'{dw_latest_utc_timestamp}', '$dw_latest_utc_timestamp')
 
             sql = Template(sql).render(**context)
