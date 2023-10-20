@@ -41,7 +41,8 @@ class Task(models.Model):
     etl_start_date = models.DateField(verbose_name='ETL开始时间')
     etl_end_date = models.DateField(verbose_name='ETL结束时间')
     is_delete_comment = models.BooleanField(default=False, verbose_name='是否删除注释')
-    is_render = models.BooleanField(default=False, verbose_name='是否已经渲染')
+    is_render = models.BooleanField(default=False, verbose_name='是否已经渲染', editable=False)
+    render_sql_file = models.CharField(max_length=255, verbose_name='渲染后的脚本文件路径', blank=True, null=True, editable=False)
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')

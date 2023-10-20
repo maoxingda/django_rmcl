@@ -3,4 +3,5 @@
 {% block object-tools-items %}
     <li><a href="{% url 'rmcl:open_sqlfile' object_id %}">打开</a></li>
     <li><a href="{% url 'rmcl:render_sqlfile' object_id %}">渲染</a></li>
+    <li><a href="{% url 'rmcl:render_sqlfile' object_id %}?no-context=1">空渲染</a></li>
 {% endblock %}
