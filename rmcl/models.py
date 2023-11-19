@@ -6,6 +6,9 @@ class WorkDir(models.Model):
         verbose_name = '工作目录'
         verbose_name_plural = '工作目录'
 
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间', editable=False)
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间', editable=False)
+
     path = models.CharField(max_length=255, unique=True, verbose_name='工作目录路径')
 
     def __str__(self):
@@ -18,6 +21,9 @@ class SqlFile(models.Model):
         verbose_name_plural = '脚本文件'
 
         ordering = ('path',)
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间', editable=False)
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间', editable=False)
 
     path = models.CharField(max_length=255, unique=True, verbose_name='Sql文件路径', editable=False)
     is_procedure = models.BooleanField(default=False, verbose_name='是否存储过程')
@@ -35,6 +41,9 @@ class Task(models.Model):
         verbose_name_plural = '任务'
         ordering = ('name',)
 
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间', editable=False)
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间', editable=False)
+
     sql_file = models.ForeignKey(SqlFile, on_delete=models.CASCADE, verbose_name='脚本文件')
     name = models.CharField(max_length=255, verbose_name='任务名称')
     desc = models.TextField(verbose_name='任务描述', blank=True, null=True)
@@ -43,9 +52,6 @@ class Task(models.Model):
     is_delete_comment = models.BooleanField(default=False, verbose_name='是否删除注释')
     is_render = models.BooleanField(default=False, verbose_name='是否已经渲染', editable=False)
     render_sql_file = models.CharField(max_length=255, verbose_name='渲染后的脚本文件路径', blank=True, null=True, editable=False)
-
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
     def __str__(self):
         return self.name

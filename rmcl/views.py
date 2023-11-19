@@ -28,7 +28,7 @@ def refresh_change_list(request):
     new_sql_files = sql_files - set(values_list)
 
     SqlFile.objects.filter(path__in=deleted_sql_files).delete()
-    SqlFile.objects.bulk_create([SqlFile(path=path) for path in new_sql_files])
+    SqlFile.objects.bulk_create(SqlFile(path=path) for path in new_sql_files)
 
     messages.info(request, '刷新成功')
 
